@@ -5,6 +5,43 @@ set -e
 echo "=== Arch Linux Post-Installation Setup ==="
 echo "Setting up leftwm, polybar, feh, picom, alacritty, and brave..."
 
+# Remove existing desktop environments
+echo "Removing existing desktop environments..."
+sudo pacman -Rns --noconfirm gnome gnome-extra 2>/dev/null || true
+sudo pacman -Rns --noconfirm kde-applications kdebase-meta 2>/dev/null || true
+sudo pacman -Rns --noconfirm xfce4 xfce4-goodies 2>/dev/null || true
+sudo pacman -Rns --noconfirm lxde lxde-common 2>/dev/null || true
+sudo pacman -Rns --noconfirm mate mate-extra 2>/dev/null || true
+sudo pacman -Rns --noconfirm cinnamon 2>/dev/null || true
+sudo pacman -Rns --noconfirm budgie-desktop 2>/dev/null || true
+sudo pacman -Rns --noconfirm deepin deepin-extra 2>/dev/null || true
+sudo pacman -Rns --noconfirm i3-wm i3blocks i3status i3lock 2>/dev/null || true
+
+# Remove common display managers
+echo "Removing existing display managers..."
+sudo systemctl disable gdm.service 2>/dev/null || true
+sudo systemctl disable sddm.service 2>/dev/null || true
+sudo systemctl disable lxdm.service 2>/dev/null || true
+sudo pacman -Rns --noconfirm gdm sddm lxdm 2>/dev/null || true
+
+# Clean orphaned packages
+echo "Cleaning orphaned packages..."
+sudo pacman -Rns $(pacman -Qtdq) --noconfirm 2>/dev/null || true
+
+# Install yay AUR helper
+echo "Installing yay AUR helper..."
+if ! command -v yay &> /dev/null; then
+    cd /tmp
+    git clone https://aur.archlinux.org/yay.git
+    cd yay
+    makepkg -si --noconfirm
+    cd ~
+    rm -rf /tmp/yay
+    echo "yay installed successfully"
+else
+    echo "yay already installed"
+fi
+
 # Update system
 echo "Updating system packages..."
 sudo pacman -Syu --noconfirm
