@@ -54,7 +54,7 @@ sudo pacman -S --needed --noconfirm \
     feh \
     picom \
     alacritty \
-    brave \
+    brave-bin \
     git \
     base-devel \
     wget \
