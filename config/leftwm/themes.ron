@@ -1,0 +1,10 @@
+[
+    (
+        name: "basic",
+        author: "LeftWM",
+        repository: "",
+        version: "1.0",
+        leftwm_versions: ">=0.4.0",
+        current: true,
+    ),
+]

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Set wallpaper
+feh --bg-scale ~/Pictures/wallpapers/default.jpg &
+
+# Start compositor
+picom &
+
+# Start notification daemon
+dunst &
+
+# Start polybar
+polybar main &
+
+# Start system tray (optional)
+# nm-applet &
+# blueman-applet &

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Kill background processes
+pkill polybar
+pkill picom
+pkill dunst
+pkill feh
