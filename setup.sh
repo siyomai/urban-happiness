@@ -3,30 +3,7 @@
 set -e
 
 echo "=== Arch Linux Post-Installation Setup ==="
-echo "Setting up leftwm, polybar, feh, picom, alacritty, and brave..."
-
-# Remove existing desktop environments
-echo "Removing existing desktop environments..."
-sudo pacman -Rns --noconfirm gnome gnome-extra 2>/dev/null || true
-sudo pacman -Rns --noconfirm kde-applications kdebase-meta 2>/dev/null || true
-sudo pacman -Rns --noconfirm xfce4 xfce4-goodies 2>/dev/null || true
-sudo pacman -Rns --noconfirm lxde lxde-common 2>/dev/null || true
-sudo pacman -Rns --noconfirm mate mate-extra 2>/dev/null || true
-sudo pacman -Rns --noconfirm cinnamon 2>/dev/null || true
-sudo pacman -Rns --noconfirm budgie-desktop 2>/dev/null || true
-sudo pacman -Rns --noconfirm deepin deepin-extra 2>/dev/null || true
-sudo pacman -Rns --noconfirm i3-wm i3blocks i3status i3lock 2>/dev/null || true
-
-# Remove common display managers
-echo "Removing existing display managers..."
-sudo systemctl disable gdm.service 2>/dev/null || true
-sudo systemctl disable sddm.service 2>/dev/null || true
-sudo systemctl disable lxdm.service 2>/dev/null || true
-sudo pacman -Rns --noconfirm gdm sddm lxdm 2>/dev/null || true
-
-# Clean orphaned packages
-echo "Cleaning orphaned packages..."
-sudo pacman -Rns $(pacman -Qtdq) --noconfirm 2>/dev/null || true
+echo "Setting up leftwm, polybar, feh, picom, alacritty, and firefox..."
 
 # Install yay AUR helper
 echo "Installing yay AUR helper..."
@@ -46,15 +23,14 @@ fi
 echo "Updating system packages..."
 sudo pacman -Syu --noconfirm
 
-# Install packages
-echo "Installing required packages..."
+# Install packages from official repositories
+echo "Installing required packages from official repositories..."
 sudo pacman -S --needed --noconfirm \
-    leftwm \
     polybar \
     feh \
     picom \
     alacritty \
-    brave-bin \
+    firefox \
     git \
     base-devel \
     wget \
@@ -68,7 +44,26 @@ sudo pacman -S --needed --noconfirm \
     lightdm \
     lightdm-gtk-greeter \
     virtualbox-guest-utils \
-    xorg-xrandr
+    xorg-xrandr \
+    xorg-server \
+    xorg-xinit \
+    mesa
+
+# Install AUR packages
+echo "Installing AUR packages..."
+yay -S --needed --noconfirm leftwm
+
+# Configure VirtualBox settings
+echo "Configuring VirtualBox settings..."
+sudo systemctl enable vboxservice.service
+
+# Add user to vboxsf group for shared folders
+sudo usermod -a -G vboxsf $USER
+
+# Create VirtualBox modules load configuration
+echo 'vboxguest
+vboxsf
+vboxvideo' | sudo tee /etc/modules-load.d/virtualbox.conf
 
 # Create config directories
 echo "Creating configuration directories..."
@@ -76,6 +71,7 @@ mkdir -p ~/.config/leftwm/themes/basic
 mkdir -p ~/.config/polybar
 mkdir -p ~/.config/alacritty
 mkdir -p ~/.config/picom
+mkdir -p ~/.config/rofi
 mkdir -p ~/Pictures/wallpapers
 
 # Copy configuration files
@@ -86,11 +82,11 @@ cp config/leftwm/themes/basic/* ~/.config/leftwm/themes/basic/
 cp config/polybar/config.ini ~/.config/polybar/
 cp config/alacritty/alacritty.yml ~/.config/alacritty/
 cp config/picom/picom.conf ~/.config/picom/
+cp config/rofi/config.rasi ~/.config/rofi/
 
 # Configure lightdm
 echo "Configuring lightdm..."
 sudo systemctl enable lightdm.service
-sudo systemctl enable vboxservice.service
 
 # Create leftwm desktop entry
 sudo mkdir -p /usr/share/xsessions
@@ -136,8 +132,29 @@ if [ ! -f ~/Pictures/wallpapers/default.jpg ]; then
     wget -O ~/Pictures/wallpapers/default.jpg "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=2560&h=1440&fit=crop" || echo "Wallpaper download failed, please add manually"
 fi
 
+# VirtualBox specific validations
+echo "Performing VirtualBox compatibility checks..."
+
+# Check if running in VirtualBox
+if lspci | grep -i virtualbox > /dev/null; then
+    echo "✓ VirtualBox detected"
+else
+    echo "⚠ Warning: VirtualBox not detected, some features may not work optimally"
+fi
+
+# Check video memory
+echo "Please ensure VirtualBox VM has:"
+echo "  - At least 128MB video memory"
+echo "  - 3D acceleration enabled"
+echo "  - Guest Additions installed"
+
 echo "=== Setup Complete! ==="
 echo "Please reboot and select 'LeftWM' from the login screen."
 echo "LightDM has been enabled and configured."
 echo "System configured for 1440p resolution (2560x1440)."
-echo "Make sure to set your VirtualBox display to 2560x1440 in VM settings."
+echo ""
+echo "VirtualBox Setup Checklist:"
+echo "1. VM Settings → Display → Video Memory: 128MB+"
+echo "2. VM Settings → Display → Enable 3D Acceleration"
+echo "3. View Menu → Auto-resize Guest Display"
+echo "4. After reboot, press Host+F to enter fullscreen"

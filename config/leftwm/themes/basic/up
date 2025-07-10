@@ -1,16 +1,26 @@
 #!/bin/bash
 
+# VirtualBox display setup
+xrandr --output Virtual-1 --mode 2560x1440 --rate 60 2>/dev/null || \
+xrandr --output VGA-1 --mode 2560x1440 --rate 60 2>/dev/null || \
+xrandr --output HDMI-1 --mode 2560x1440 --rate 60 2>/dev/null || true
+
 # Set wallpaper
 feh --bg-scale ~/Pictures/wallpapers/default.jpg &
 
-# Start compositor
-picom &
+# Start compositor with VirtualBox-friendly settings
+picom --config ~/.config/picom/picom.conf &
 
 # Start notification daemon
 dunst &
 
 # Start polybar
 polybar main &
+
+# VirtualBox clipboard integration
+VBoxClient --clipboard &
+VBoxClient --draganddrop &
+VBoxClient --seamless &
 
 # Start system tray (optional)
 # nm-applet &
